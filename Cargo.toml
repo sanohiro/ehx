@@ -1,0 +1,34 @@
+[package]
+name = "hx"
+version = "0.1.0"
+edition = "2024"
+description = "A terminal hex editor inspired by Stirling"
+license = "MIT"
+
+[dependencies]
+# TUI
+ratatui = "0.29"
+crossterm = "0.28"
+
+# 文字コード
+encoding_rs = "0.8"
+
+# Unicode処理
+unicode-width = "0.2"
+unicode-segmentation = "1.12"
+
+# ファイル処理
+memmap2 = "0.9"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# クリップボード
+arboard = "3"
+
+# Base64エンコーディング（OSC 52用）
+base64 = "0.22"
+
+# エラーハンドリング
+anyhow = "1"
+thiserror = "2"
