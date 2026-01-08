@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use arboard::Clipboard;
 use base64::{engine::general_purpose::STANDARD, Engine};
 use std::io::{self, Write};

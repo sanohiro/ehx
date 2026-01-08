@@ -16,6 +16,7 @@ enum UndoOp {
 }
 
 /// バイナリドキュメントを表す構造体
+#[allow(dead_code)]
 pub struct Document {
     /// ファイルパス
     path: Option<PathBuf>,
@@ -31,6 +32,7 @@ pub struct Document {
     redo_stack: Vec<UndoOp>,
 }
 
+#[allow(dead_code)]
 impl Document {
     /// 空のドキュメントを作成
     pub fn new() -> Self {

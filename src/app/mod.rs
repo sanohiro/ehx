@@ -32,6 +32,7 @@ pub enum PrefixKey {
 
 /// アプリケーションアクション
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum Action {
     Quit,
     Save,

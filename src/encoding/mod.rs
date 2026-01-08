@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use encoding_rs::Encoding;
 use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthStr;
