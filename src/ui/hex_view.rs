@@ -6,7 +6,7 @@ use ratatui::{
 };
 
 use super::Colors;
-use crate::encoding::{byte_to_char, CharEncoding};
+use crate::encoding::{decode_for_display, CharEncoding};
 
 /// 表示モード
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -156,35 +156,68 @@ impl<'a> HexView<'a> {
 
         x += 1; // 区切りスペース
 
-        // ASCII表示
-        for i in row_start..row_start + self.bytes_per_row {
-            if i < row_end {
-                let byte = self.data[i];
-                let ch = byte_to_char(byte);
+        // ASCII表示（エンコーディングに従ってデコード）
+        let row_bytes = if row_end > row_start {
+            &self.data[row_start..row_end]
+        } else {
+            &[]
+        };
+        let decoded = decode_for_display(row_bytes, self.encoding);
 
-                let mut style = if byte.is_ascii_graphic() || byte == b' ' {
-                    Style::default().fg(Colors::ASCII_NORMAL)
-                } else {
-                    Style::default().fg(Colors::ASCII_CONTROL)
-                };
+        let mut byte_idx = 0;
+        while byte_idx < self.bytes_per_row {
+            let abs_idx = row_start + byte_idx;
 
-                // カーソル位置のハイライト
-                if i == self.cursor && self.mode == ViewMode::Ascii {
-                    style = style.bg(Colors::CURSOR_BG).fg(Colors::CURSOR);
-                }
-                // 選択範囲のハイライト
-                else if let Some((start, end)) = self.selection {
-                    if i >= start && i <= end {
-                        style = style.bg(Colors::SELECTION_BG);
+            if byte_idx < decoded.len() {
+                if let Some(ref dc) = decoded[byte_idx] {
+                    // この位置に文字がある
+                    let mut style = Style::default().fg(Colors::ASCII_NORMAL);
+
+                    // カーソル位置のハイライト
+                    let cursor_in_char = self.cursor >= abs_idx
+                        && self.cursor < abs_idx + dc.byte_len;
+                    if cursor_in_char && self.mode == ViewMode::Ascii {
+                        style = style.bg(Colors::CURSOR_BG).fg(Colors::CURSOR);
                     }
-                }
+                    // 選択範囲のハイライト
+                    else if let Some((start, end)) = self.selection {
+                        if abs_idx >= start && abs_idx <= end {
+                            style = style.bg(Colors::SELECTION_BG);
+                        }
+                    }
 
-                buf.set_string(x, y, &ch.to_string(), style);
-            } else if i == eof_pos && i == self.cursor && self.mode == ViewMode::Ascii {
+                    // 文字を表示
+                    buf.set_string(x, y, &dc.display, style);
+
+                    // 表示幅分進める（ただしbyte_lenの範囲内で）
+                    let advance = dc.width.min(dc.byte_len);
+                    x += advance as u16;
+
+                    // 残りのバイト分はスキップ（継続バイト）
+                    // 表示幅がバイト長より小さい場合、空白で埋める
+                    if dc.byte_len > dc.width {
+                        for _ in dc.width..dc.byte_len {
+                            buf.set_string(x, y, " ", style);
+                            x += 1;
+                        }
+                    }
+
+                    byte_idx += dc.byte_len;
+                } else {
+                    // None = 継続バイト（前の文字の一部）- スキップ済みのはず
+                    x += 1;
+                    byte_idx += 1;
+                }
+            } else if abs_idx == eof_pos && abs_idx == self.cursor && self.mode == ViewMode::Ascii {
                 // EOF位置のカーソル（ASCIIモード）
                 buf.set_string(x, y, "_", Style::default().bg(Colors::CURSOR_BG).fg(Colors::CURSOR));
+                x += 1;
+                byte_idx += 1;
+            } else {
+                // データがない部分
+                x += 1;
+                byte_idx += 1;
             }
-            x += 1;
         }
     }
 }
