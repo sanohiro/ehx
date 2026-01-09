@@ -1,0 +1,40 @@
+# typed: false
+# frozen_string_literal: true
+
+class Hx < Formula
+  desc "Terminal hex editor with Emacs keybindings"
+  homepage "https://github.com/sanohiro/hx"
+  version "{{VERSION}}"
+  license "MIT"
+
+  on_macos do
+    on_arm do
+      url "https://github.com/sanohiro/hx/releases/download/v{{VERSION}}/hx-macos-aarch64.tar.gz"
+      sha256 "{{SHA_MACOS_ARM}}"
+    end
+    on_intel do
+      url "https://github.com/sanohiro/hx/releases/download/v{{VERSION}}/hx-macos-x86_64.tar.gz"
+      sha256 "{{SHA_MACOS_INTEL}}"
+    end
+  end
+
+  on_linux do
+    on_arm do
+      url "https://github.com/sanohiro/hx/releases/download/v{{VERSION}}/hx-linux-aarch64.tar.gz"
+      sha256 "{{SHA_LINUX_ARM}}"
+    end
+    on_intel do
+      url "https://github.com/sanohiro/hx/releases/download/v{{VERSION}}/hx-linux-x86_64.tar.gz"
+      sha256 "{{SHA_LINUX_INTEL}}"
+    end
+  end
+
+  def install
+    bin.install "hx"
+    bin.install "bx"
+  end
+
+  test do
+    assert_match "hx", shell_output("#{bin}/hx --version")
+  end
+end

@@ -48,6 +48,22 @@
 
 ## インストール
 
+### Homebrew (macOS / Linux)
+
+```bash
+brew tap sanohiro/hx
+brew install hx
+```
+
+### apt (Debian / Ubuntu)
+
+```bash
+curl -fsSL https://sanohiro.github.io/hx/hx.gpg | sudo gpg --dearmor -o /usr/share/keyrings/hx.gpg
+echo "deb [signed-by=/usr/share/keyrings/hx.gpg] https://sanohiro.github.io/hx stable main" | sudo tee /etc/apt/sources.list.d/hx.list
+sudo apt update
+sudo apt install hx
+```
+
 ### ソースからビルド
 
 ```bash
@@ -55,7 +71,7 @@
 git clone https://github.com/sanohiro/hx
 cd hx
 cargo build --release
-cp ./target/release/hx ~/.local/bin/
+cp ./target/release/hx ./target/release/bx ~/.local/bin/
 ```
 
 ---
