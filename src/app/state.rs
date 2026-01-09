@@ -1300,11 +1300,16 @@ impl App {
                 self.prompt_mode = PromptMode::CommandArg;
                 self.prompt_input.clear();
             }
+            "help" | "?" | "h" => {
+                self.status_message = Some(
+                    "Commands: fill(f) insert(i) goto(g) save(s) quit(q) help(?)".to_string()
+                );
+            }
             "" => {
                 // 空入力は無視
             }
             _ => {
-                self.status_message = Some(format!("Unknown command: {}", cmd));
+                self.status_message = Some(format!("Unknown command: {} (try 'help')", cmd));
             }
         }
     }

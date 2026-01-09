@@ -144,6 +144,7 @@ Unsaved changes prompt: `y` (save & continue), `n` (discard), `c` (cancel)
 | `goto` / `g` | Jump to address |
 | `save` / `s` | Save file |
 | `quit` / `q` | Quit |
+| `help` / `?` | Show command list |
 
 ### Display
 
