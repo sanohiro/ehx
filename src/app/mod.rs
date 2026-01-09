@@ -101,6 +101,7 @@ pub enum Action {
     StartGoto,   // M-g: アドレスジャンプ
     OpenFile,    // C-x C-f: ファイルを開く
     SaveAs,      // C-x C-w: 別名保存
+    KillBuffer,  // C-x k: バッファを閉じる
 
     None,
 }
@@ -219,6 +220,8 @@ impl Action {
             (KeyCode::Char('f'), true) => Action::OpenFile,
             // C-x C-w: 別名保存
             (KeyCode::Char('w'), true) => Action::SaveAs,
+            // C-x k: バッファを閉じる
+            (KeyCode::Char('k'), false) => Action::KillBuffer,
 
             // C-g: キャンセル
             (KeyCode::Char('g'), true) => Action::Cancel,

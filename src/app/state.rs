@@ -36,6 +36,19 @@ pub enum PromptMode {
     /// ファイルパス入力中（別名保存）
     SaveAs,
 }
+
+/// 確認モード（未保存変更時）
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub enum ConfirmMode {
+    #[default]
+    Off,
+    /// 終了確認
+    Quit,
+    /// ファイルを開く確認（パスを保持）
+    OpenFile(String),
+    /// バッファを閉じる確認
+    KillBuffer,
+}
 use crate::buffer::Document;
 use crate::clipboard::{self, HexFormat};
 use crate::encoding::{self, CharEncoding};
@@ -85,6 +98,8 @@ pub struct App {
     prompt_mode: PromptMode,
     /// プロンプト入力内容
     prompt_input: String,
+    /// 確認モード
+    confirm_mode: ConfirmMode,
 }
 
 impl App {
@@ -112,6 +127,7 @@ impl App {
             replace_with: String::new(),
             prompt_mode: PromptMode::Off,
             prompt_input: String::new(),
+            confirm_mode: ConfirmMode::Off,
         }
     }
 
@@ -683,7 +699,13 @@ impl App {
         }
 
         match action {
-            Action::Quit => self.should_quit = true,
+            Action::Quit => {
+                if self.document.is_modified() {
+                    self.confirm_mode = ConfirmMode::Quit;
+                } else {
+                    self.should_quit = true;
+                }
+            }
             Action::Save => {
                 if let Err(e) = self.document.save() {
                     self.status_message = Some(format!("Save failed: {}", e));
@@ -835,6 +857,14 @@ impl App {
                 // 現在のファイル名をデフォルトに
                 self.prompt_input = self.document.filename().unwrap_or("").to_string();
             }
+            // バッファを閉じる
+            Action::KillBuffer => {
+                if self.document.is_modified() {
+                    self.confirm_mode = ConfirmMode::KillBuffer;
+                } else {
+                    self.do_kill_buffer();
+                }
+            }
             _ => {}
         }
     }
@@ -874,6 +904,12 @@ impl App {
                     // プロンプトモード中は特別な処理
                     if self.prompt_mode != PromptMode::Off {
                         self.handle_prompt_key(key);
+                        return Ok(());
+                    }
+
+                    // 確認モード中は特別な処理
+                    if self.confirm_mode != ConfirmMode::Off {
+                        self.handle_confirm_key(key);
                         return Ok(());
                     }
 
@@ -1197,7 +1233,12 @@ impl App {
                 self.goto_address(&input);
             }
             PromptMode::OpenFile => {
-                self.open_file(&input);
+                // 未保存の変更があれば確認
+                if self.document.is_modified() {
+                    self.confirm_mode = ConfirmMode::OpenFile(input);
+                } else {
+                    self.open_file(&input);
+                }
             }
             PromptMode::SaveAs => {
                 self.save_as(&input);
@@ -1274,6 +1315,64 @@ impl App {
                 self.status_message = Some(format!("Failed to open: {}", e));
             }
         }
+    }
+
+    /// 確認モード中のキー処理
+    fn handle_confirm_key(&mut self, key: crossterm::event::KeyEvent) {
+        match key.code {
+            // y: 保存して実行
+            KeyCode::Char('y') | KeyCode::Char('Y') => {
+                // まず保存
+                if let Err(e) = self.document.save() {
+                    self.status_message = Some(format!("Save failed: {}", e));
+                    self.confirm_mode = ConfirmMode::Off;
+                    return;
+                }
+                // 保存成功したらアクション実行
+                self.execute_confirmed_action();
+            }
+            // n: 保存せずに実行
+            KeyCode::Char('n') | KeyCode::Char('N') => {
+                self.execute_confirmed_action();
+            }
+            // c / Escape / C-g: キャンセル
+            KeyCode::Char('c') | KeyCode::Char('C') | KeyCode::Esc => {
+                self.confirm_mode = ConfirmMode::Off;
+                self.status_message = Some("Cancelled".to_string());
+            }
+            KeyCode::Char('g') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.confirm_mode = ConfirmMode::Off;
+                self.status_message = Some("Cancelled".to_string());
+            }
+            _ => {}
+        }
+    }
+
+    /// 確認後のアクションを実行
+    fn execute_confirmed_action(&mut self) {
+        let mode = std::mem::take(&mut self.confirm_mode);
+        match mode {
+            ConfirmMode::Quit => {
+                self.should_quit = true;
+            }
+            ConfirmMode::OpenFile(path) => {
+                self.open_file(&path);
+            }
+            ConfirmMode::KillBuffer => {
+                self.do_kill_buffer();
+            }
+            ConfirmMode::Off => {}
+        }
+    }
+
+    /// バッファを閉じる（空のバッファにする）
+    fn do_kill_buffer(&mut self) {
+        self.document = Document::new();
+        self.cursor = 0;
+        self.offset = 0;
+        self.selection = None;
+        self.selection_start = None;
+        self.status_message = Some("Buffer killed".to_string());
     }
 
     /// 別名保存
@@ -1439,6 +1538,8 @@ impl App {
             format!("Open file: {}_", self.prompt_input)
         } else if self.prompt_mode == PromptMode::SaveAs {
             format!("Save as: {}_", self.prompt_input)
+        } else if self.confirm_mode != ConfirmMode::Off {
+            "Save changes? (y)es (n)o (c)ancel".to_string()
         } else if let Some(ref msg) = self.status_message {
             msg.clone()
         } else if let Some((start, end)) = self.selection {

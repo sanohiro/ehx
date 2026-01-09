@@ -124,7 +124,10 @@ Search/replace accepts text or HEX patterns:
 | `C-x C-s` | Save |
 | `C-x C-w` | Save as |
 | `C-x C-f` | Open file |
+| `C-x k` | Close buffer (new empty buffer) |
 | `C-x C-c` | Quit |
+
+Unsaved changes prompt: `y` (save & continue), `n` (discard), `c` (cancel)
 
 ### Navigation
 
