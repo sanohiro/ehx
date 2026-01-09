@@ -97,6 +97,9 @@ pub enum Action {
     EnterCtrlX,  // C-x を押した
     Cancel,      // C-g でキャンセル
 
+    // コマンド
+    ExecuteCommand,  // M-x: コマンド実行
+
     // ジャンプ・ファイル操作
     StartGoto,   // M-g: アドレスジャンプ
     OpenFile,    // C-x C-f: ファイルを開く
@@ -196,6 +199,9 @@ impl Action {
 
             // 置換: M-% (query-replace)
             (KeyCode::Char('%'), false, true, _) => Action::StartReplace,
+
+            // コマンド: M-x
+            (KeyCode::Char('x'), false, true, false) => Action::ExecuteCommand,
 
             // ジャンプ: M-g (goto-address)
             (KeyCode::Char('g'), false, true, false) => Action::StartGoto,

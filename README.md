@@ -135,6 +135,16 @@ Unsaved changes prompt: `y` (save & continue), `n` (discard), `c` (cancel)
 |-----|--------|
 | `M-g` | Goto address (hex: `0x100`, `100h`, or decimal) |
 
+### Commands (M-x)
+
+| Command | Action |
+|---------|--------|
+| `fill` / `f` | Fill selection with byte (e.g., `00`, `FF`) |
+| `insert` / `i` | Insert N bytes at cursor (e.g., `16 00`, `0x10 FF`) |
+| `goto` / `g` | Jump to address |
+| `save` / `s` | Save file |
+| `quit` / `q` | Quit |
+
 ### Display
 
 | Key | Action |

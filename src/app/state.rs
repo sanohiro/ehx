@@ -35,6 +35,10 @@ pub enum PromptMode {
     OpenFile,
     /// ファイルパス入力中（別名保存）
     SaveAs,
+    /// コマンド入力中 (M-x)
+    Command,
+    /// コマンド引数入力中
+    CommandArg,
 }
 
 /// 確認モード（未保存変更時）
@@ -100,6 +104,8 @@ pub struct App {
     prompt_input: String,
     /// 確認モード
     confirm_mode: ConfirmMode,
+    /// 実行中のコマンド名（引数入力用）
+    current_command: String,
 }
 
 impl App {
@@ -128,6 +134,7 @@ impl App {
             prompt_mode: PromptMode::Off,
             prompt_input: String::new(),
             confirm_mode: ConfirmMode::Off,
+            current_command: String::new(),
         }
     }
 
@@ -865,6 +872,12 @@ impl App {
                     self.do_kill_buffer();
                 }
             }
+            // コマンド実行 (M-x)
+            Action::ExecuteCommand => {
+                self.prompt_mode = PromptMode::Command;
+                self.prompt_input.clear();
+                self.current_command.clear();
+            }
             _ => {}
         }
     }
@@ -1243,7 +1256,173 @@ impl App {
             PromptMode::SaveAs => {
                 self.save_as(&input);
             }
+            PromptMode::Command => {
+                self.dispatch_command(&input);
+            }
+            PromptMode::CommandArg => {
+                self.execute_command_with_arg(&input);
+            }
             PromptMode::Off => {}
+        }
+    }
+
+    /// コマンドをディスパッチ
+    fn dispatch_command(&mut self, cmd: &str) {
+        let cmd = cmd.trim().to_lowercase();
+        match cmd.as_str() {
+            // 引数不要なコマンド
+            "goto" | "g" => {
+                self.prompt_mode = PromptMode::GotoAddress;
+                self.prompt_input.clear();
+            }
+            "save" | "s" => {
+                if let Err(e) = self.document.save() {
+                    self.status_message = Some(format!("Save failed: {}", e));
+                } else {
+                    self.status_message = Some("Saved".to_string());
+                }
+            }
+            "quit" | "q" => {
+                self.execute(Action::Quit);
+            }
+            // 引数が必要なコマンド
+            "fill" | "f" => {
+                if self.selection.is_none() {
+                    self.status_message = Some("No selection".to_string());
+                } else {
+                    self.current_command = "fill".to_string();
+                    self.prompt_mode = PromptMode::CommandArg;
+                    self.prompt_input.clear();
+                }
+            }
+            "insert" | "i" => {
+                self.current_command = "insert".to_string();
+                self.prompt_mode = PromptMode::CommandArg;
+                self.prompt_input.clear();
+            }
+            "" => {
+                // 空入力は無視
+            }
+            _ => {
+                self.status_message = Some(format!("Unknown command: {}", cmd));
+            }
+        }
+    }
+
+    /// コマンドを引数付きで実行
+    fn execute_command_with_arg(&mut self, arg: &str) {
+        let cmd = self.current_command.clone();
+        self.current_command.clear();
+
+        match cmd.as_str() {
+            "fill" => {
+                self.cmd_fill(arg);
+            }
+            "insert" => {
+                self.cmd_insert(arg);
+            }
+            _ => {
+                self.status_message = Some(format!("Unknown command: {}", cmd));
+            }
+        }
+    }
+
+    /// fill コマンド: 選択範囲を指定バイトで埋める
+    fn cmd_fill(&mut self, arg: &str) {
+        let arg = arg.trim();
+
+        // バイト値をパース
+        let byte = if arg.starts_with("0x") || arg.starts_with("0X") {
+            u8::from_str_radix(&arg[2..], 16).ok()
+        } else if arg.len() == 2 && arg.chars().all(|c| c.is_ascii_hexdigit()) {
+            u8::from_str_radix(arg, 16).ok()
+        } else {
+            arg.parse().ok()
+        };
+
+        let Some(byte) = byte else {
+            self.status_message = Some("Invalid byte value".to_string());
+            return;
+        };
+
+        let Some((start, end)) = self.selection else {
+            self.status_message = Some("No selection".to_string());
+            return;
+        };
+
+        // 選択範囲を埋める
+        for i in start..=end {
+            if i < self.document.len() {
+                let _ = self.document.set(i, byte);
+            }
+        }
+
+        let count = end - start + 1;
+        self.status_message = Some(format!("Filled {} bytes with {:02X}", count, byte));
+        self.clear_selection();
+    }
+
+    /// insert コマンド: 指定サイズのバイトを挿入
+    fn cmd_insert(&mut self, arg: &str) {
+        // フォーマット: "count byte" or "count" (デフォルト 00)
+        let parts: Vec<&str> = arg.trim().split_whitespace().collect();
+
+        let (count, byte) = match parts.len() {
+            1 => {
+                let count = Self::parse_number(parts[0]);
+                (count, Some(0u8))
+            }
+            2 => {
+                let count = Self::parse_number(parts[0]);
+                let byte = Self::parse_byte(parts[1]);
+                (count, byte)
+            }
+            _ => {
+                self.status_message = Some("Usage: insert <count> [byte]".to_string());
+                return;
+            }
+        };
+
+        let Some(count) = count else {
+            self.status_message = Some("Invalid count".to_string());
+            return;
+        };
+
+        let Some(byte) = byte else {
+            self.status_message = Some("Invalid byte value".to_string());
+            return;
+        };
+
+        if count == 0 {
+            self.status_message = Some("Count must be > 0".to_string());
+            return;
+        }
+
+        // カーソル位置に挿入
+        for i in 0..count {
+            let _ = self.document.insert(self.cursor + i, byte);
+        }
+
+        self.status_message = Some(format!("Inserted {} bytes of {:02X}", count, byte));
+    }
+
+    /// 数値をパース（0x prefix または 10進数）
+    fn parse_number(s: &str) -> Option<usize> {
+        if s.starts_with("0x") || s.starts_with("0X") {
+            usize::from_str_radix(&s[2..], 16).ok()
+        } else {
+            s.parse().ok()
+        }
+    }
+
+    /// バイト値をパース
+    fn parse_byte(s: &str) -> Option<u8> {
+        if s.starts_with("0x") || s.starts_with("0X") {
+            u8::from_str_radix(&s[2..], 16).ok()
+        } else if s.len() <= 2 && s.chars().all(|c| c.is_ascii_hexdigit()) {
+            u8::from_str_radix(s, 16).ok()
+        } else {
+            s.parse().ok()
         }
     }
 
@@ -1538,6 +1717,15 @@ impl App {
             format!("Open file: {}_", self.prompt_input)
         } else if self.prompt_mode == PromptMode::SaveAs {
             format!("Save as: {}_", self.prompt_input)
+        } else if self.prompt_mode == PromptMode::Command {
+            format!("M-x {}_", self.prompt_input)
+        } else if self.prompt_mode == PromptMode::CommandArg {
+            let prompt = match self.current_command.as_str() {
+                "fill" => "Fill with byte (hex):",
+                "insert" => "Insert (count [byte]):",
+                _ => "Arg:",
+            };
+            format!("{} {}_", prompt, self.prompt_input)
         } else if self.confirm_mode != ConfirmMode::Off {
             "Save changes? (y)es (n)o (c)ancel".to_string()
         } else if let Some(ref msg) = self.status_message {
