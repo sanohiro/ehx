@@ -255,6 +255,8 @@ jobs:
 
           gpg --armor --export > hx.gpg
 
+          cp ../.github/install.sh .
+
           ls -laR
 
       - name: Deploy apt repo to GitHub Pages

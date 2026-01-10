@@ -58,10 +58,15 @@ brew install hx
 ### apt (Debian / Ubuntu)
 
 ```bash
-curl -fsSL https://sanohiro.github.io/hx/hx.gpg | sudo gpg --dearmor -o /usr/share/keyrings/hx.gpg
-echo "deb [signed-by=/usr/share/keyrings/hx.gpg] https://sanohiro.github.io/hx stable main" | sudo tee /etc/apt/sources.list.d/hx.list
-sudo apt update
+curl -fsSL https://sanohiro.github.io/hx/install.sh | sudo sh
 sudo apt install hx
+```
+
+Or download `.deb` directly from [Releases](https://github.com/sanohiro/hx/releases):
+
+```bash
+wget https://github.com/sanohiro/hx/releases/latest/download/hx_amd64.deb
+sudo apt install ./hx_amd64.deb
 ```
 
 ### Build from source
