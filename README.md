@@ -58,14 +58,14 @@ brew install ehx
 ### apt (Debian / Ubuntu)
 
 ```bash
-curl -fsSL https://sanohiro.github.io/hx/install.sh | sudo sh
+curl -fsSL https://sanohiro.github.io/ehx/install.sh | sudo sh
 sudo apt install ehx
 ```
 
-Or download `.deb` directly from [Releases](https://github.com/sanohiro/hx/releases):
+Or download `.deb` directly from [Releases](https://github.com/sanohiro/ehx/releases):
 
 ```bash
-wget https://github.com/sanohiro/hx/releases/latest/download/ehx_amd64.deb
+wget https://github.com/sanohiro/ehx/releases/latest/download/ehx_amd64.deb
 sudo apt install ./ehx_amd64.deb
 ```
 
@@ -73,7 +73,7 @@ sudo apt install ./ehx_amd64.deb
 
 ```bash
 # Requires Rust 1.85+
-git clone https://github.com/sanohiro/hx
+git clone https://github.com/sanohiro/ehx
 cd hx
 cargo build --release
 cp ./target/release/ehx ./target/release/bx ~/.local/bin/
