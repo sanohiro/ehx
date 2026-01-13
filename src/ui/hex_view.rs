@@ -101,14 +101,18 @@ impl<'a> HexView<'a> {
 
     /// 前の行からはみ出した文字の継続バイト数を計算
     fn count_continuation_bytes(&self, row_start: usize) -> usize {
-        if row_start == 0 {
+        if row_start == 0 || self.data.is_empty() {
             return 0;
         }
 
         // 前の数バイトを調べて、行境界をまたぐ文字があるかチェック
         let lookahead = 4;
         let check_start = row_start.saturating_sub(lookahead);
-        let check_bytes = &self.data[check_start..row_start.min(self.data.len())];
+        let end = row_start.min(self.data.len());
+        if check_start >= end {
+            return 0;
+        }
+        let check_bytes = &self.data[check_start..end];
 
         if check_bytes.is_empty() {
             return 0;
