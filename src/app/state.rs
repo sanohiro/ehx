@@ -138,6 +138,18 @@ impl App {
         }
     }
 
+    /// 全角英数記号（U+FF01〜U+FF5E）を半角（U+0021〜U+007E）に変換
+    fn normalize_fullwidth(c: char) -> char {
+        let cp = c as u32;
+        if cp >= 0xFF01 && cp <= 0xFF5E {
+            char::from_u32(cp - 0xFF00 + 0x20).unwrap_or(c)
+        } else if c == '　' {
+            ' ' // 全角スペース → 半角スペース
+        } else {
+            c
+        }
+    }
+
     /// ファイルを開く
     pub fn open(&mut self, path: impl Into<PathBuf>) -> Result<()> {
         self.document = Document::open(path)?;
@@ -1096,7 +1108,11 @@ impl App {
                 }
             }
             ReplaceMode::Confirming => {
-                match key.code {
+                let normalized = match key.code {
+                    KeyCode::Char(c) => KeyCode::Char(Self::normalize_fullwidth(c)),
+                    other => other,
+                };
+                match normalized {
                     // y: この箇所を置換して次へ
                     KeyCode::Char('y') | KeyCode::Char('Y') | KeyCode::Char(' ') => {
                         self.do_replace_current();
@@ -1111,8 +1127,11 @@ impl App {
                         self.do_replace_all_remaining();
                     }
                     // q / Escape / C-g: 終了
-                    KeyCode::Char('q') | KeyCode::Char('Q')
-                    | KeyCode::Esc | KeyCode::Char('g') if ctrl || !ctrl => {
+                    KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => {
+                        self.replace_mode = ReplaceMode::Off;
+                        self.status_message = Some("Query replace finished".to_string());
+                    }
+                    KeyCode::Char('g') if ctrl => {
                         self.replace_mode = ReplaceMode::Off;
                         self.status_message = Some("Query replace finished".to_string());
                     }
@@ -1503,7 +1522,11 @@ impl App {
 
     /// 確認モード中のキー処理
     fn handle_confirm_key(&mut self, key: crossterm::event::KeyEvent) {
-        match key.code {
+        let normalized = match key.code {
+            KeyCode::Char(c) => KeyCode::Char(Self::normalize_fullwidth(c)),
+            other => other,
+        };
+        match normalized {
             // y: 保存して実行
             KeyCode::Char('y') | KeyCode::Char('Y') => {
                 // まず保存
