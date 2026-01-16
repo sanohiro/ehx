@@ -1,0 +1,18 @@
+Origin: ehx
+Label: ehx
+Suite: stable
+Codename: stable
+Date: Fri, 16 Jan 2026 12:39:58 +0000
+Architectures: amd64 arm64
+Components: main
+Description: ehx apt repository
+MD5Sum:
+ afea37eabae6207d8a1cd70ab630ca13 467 main/binary-amd64/Packages
+ c425d27ec0e6c96a83ed6ab022c29f01 361 main/binary-amd64/Packages.gz
+ fda4cbff036d5cb31658649cfe7a65af 467 main/binary-arm64/Packages
+ c22544aa6dc8bd78c4d31206e1b45739 357 main/binary-arm64/Packages.gz
+SHA256:
+ a16731d1dbf2c016354a55a8ae2d3da8ab7563f74fc9a2244f19dd3470668704 467 main/binary-amd64/Packages
+ 2cb5f306292d90be1e5d902cdd20f3b2be26f508c696dc884efd1cb8b14d65e5 361 main/binary-amd64/Packages.gz
+ 152505de678b90fa49e5b9214d1e87dbd56cb6f14e124b0b432aab8fcd1dc249 467 main/binary-arm64/Packages
+ 52755c529324218eaab36a28a139653aef0b02a6870c425a453a81de77b73cf6 357 main/binary-arm64/Packages.gz

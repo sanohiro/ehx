@@ -1,0 +1,14 @@
+Package: ehx
+Version: 0.1.6
+Architecture: amd64
+Maintainer: sanohiro <sanohiro@users.noreply.github.com>
+Filename: pool/main/e/ehx/ehx_amd64.deb
+Size: 724680
+MD5sum: c592a4032e832a153af5e06145038a28
+SHA1: f6c783f807800214f2c2683e86f1d25c80c6e17d
+SHA256: 4a094bc70fc5a5f9804502bcf85d66c5dced6cde828b3e056b833b4cf4eac7f2
+Section: editors
+Priority: optional
+Description: Terminal hex editor with Emacs keybindings
+ A terminal hex editor for those who think in C-x C-s.
+

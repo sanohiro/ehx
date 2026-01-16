@@ -1,0 +1,37 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Origin: ehx
+Label: ehx
+Suite: stable
+Codename: stable
+Date: Fri, 16 Jan 2026 12:39:58 +0000
+Architectures: amd64 arm64
+Components: main
+Description: ehx apt repository
+MD5Sum:
+ afea37eabae6207d8a1cd70ab630ca13 467 main/binary-amd64/Packages
+ c425d27ec0e6c96a83ed6ab022c29f01 361 main/binary-amd64/Packages.gz
+ fda4cbff036d5cb31658649cfe7a65af 467 main/binary-arm64/Packages
+ c22544aa6dc8bd78c4d31206e1b45739 357 main/binary-arm64/Packages.gz
+SHA256:
+ a16731d1dbf2c016354a55a8ae2d3da8ab7563f74fc9a2244f19dd3470668704 467 main/binary-amd64/Packages
+ 2cb5f306292d90be1e5d902cdd20f3b2be26f508c696dc884efd1cb8b14d65e5 361 main/binary-amd64/Packages.gz
+ 152505de678b90fa49e5b9214d1e87dbd56cb6f14e124b0b432aab8fcd1dc249 467 main/binary-arm64/Packages
+ 52755c529324218eaab36a28a139653aef0b02a6870c425a453a81de77b73cf6 357 main/binary-arm64/Packages.gz
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEF38P8zCqxTq54YJmwUQK89zeK0kFAmlqMZ4ACgkQwUQK89ze
+K0kczA/+LI0GGsZd0DPPzfepaadhfaoAAK57NPmuFo2DTUi1rBMaolBXUY4mt+/0
+MNP6WST+IhlOgF/H6Qa6Zp6GEdRm1LH9A9J5nQGckANAwxKR8NW0VELh3BHHdzbo
+awyvWGkgzcU29fKyMh133FXqt6RxWcFgRgYgcXruTVKHlOyzhU9OBB52rmzZC95T
+dlQoTvaPFS/DX7OTiNQJ54l7grh7I3Uvkgg15s1ZB2qlyCWEepUFMjYDPlD6qsg0
+nq/v2ty7KrOfDHrELipTfHLKp+PnK/M01Q8P8nB/hlr7Y2fhMpO2Om/4tfc3hHJm
+uRwRAatlGgKe6JkQpafxmk6i7k4q7H8oBHiBo1PQDnTDZDFjbFDrC6A1XIKu8JXh
+ietp1rgf7yBU6bhUhj7xQc0uIyiRPELYzP9KnUvt9IPKKuG6XqnP0jk07Os4DMBJ
+bIYMlsxqadadqEERTPH8UYcTIHhIshBuw/wHODga7LVUqd0aqReTI9lm1rMHtxqF
+jDrNWDqOImaErZ8GqbehjN6zP7Q0wzMy9r++/t+1lFu8HpvZGkdyM2R2L9y4CPvQ
+sj4b0Gq1DSyzSzYBF9LRTRThzbc73a4I/iYJMmdW9mJeD5kPvSPInr7Jo02lBu4o
+nqz/pAZVVvb+FyiQvxvEUMQKU5FsO3/8eNzGoDcYd3+1d0mrC7M=
+=wIbk
+-----END PGP SIGNATURE-----
